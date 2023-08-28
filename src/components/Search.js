@@ -108,7 +108,9 @@ export default function Search(props) {
 
         <div>
           <button
-            className="search__button"
+            className={
+              query.length > 0 ? "search__button" : "search__button-disabled"
+            }
             onClick={() => setSearchedShow(query)}
           >
             Search

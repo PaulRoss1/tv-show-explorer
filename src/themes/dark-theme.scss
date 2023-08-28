@@ -101,6 +101,15 @@ $small-font: 16px;
       margin-left: 2px;
       cursor: pointer;
     }
+    &__button-disabled {
+      background-color: #b4b4b4;
+      color: #252429;
+      border: none;
+      border-radius: 4px;
+      padding: 13px 20px 12px 20px;
+      margin-left: 2px;
+      cursor: default;
+    }
   }
 
   .info {
