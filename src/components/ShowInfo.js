@@ -1,23 +1,24 @@
 export default function ShowInfo(props) {
-  const { isLoading, show } = props;
+  const { show } = props;
 
   return (
     <div className="info">
-      {isLoading ? (
-        <div className="info__loading">Loading..</div>
-      ) : (
-        <>
-          <span className="info__title">
+      {!(Object.keys(show).length === 0) &&
+        !(show.Error == "Series not found!") && (
+          <span className="info__data">
             {`${show.Title} `}
-            <span className="info__year">{`(${show.Year}) `}</span>
-            <br />
-            <span className="info__star"> ★</span>
-            {` ${show.imdbRating}`}
-            <br />
+            <span className="info__year">{`(${show.Year})`}</span>
+            &nbsp;&nbsp;&nbsp;
+            {`·`}
+            &nbsp;&nbsp;&nbsp;
+            {`${show.imdbRating} `}
+            <span className="info__star">★</span>
+            &nbsp;&nbsp;&nbsp;
+            {`·`}
+            &nbsp;&nbsp;&nbsp;
             {`Seasons: ${show.totalSeasons}`}
           </span>
-        </>
-      )}
+        )}
     </div>
   );
 }

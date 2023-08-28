@@ -7,27 +7,22 @@ const OMDB_API_URL = "http://www.omdbapi.com/";
 const OMDB_API_KEY = "8ea4c4c5";
 
 export default function Graph(props) {
+  const [errorInfo, setErrorInfo] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [chart, setChart] = useState(null);
   const [episode, setEpisode] = useState({});
   const [chartType, setChartType] = useState("line");
-
-  const [episodeImage, setEpisodeImage] = useState("");
-  const [episodePlot, setEpisodePlot] = useState("");
   const [extraInfo, setExtraInfo] = useState({});
 
-  const { setIsLoading, setErrorInfo, xxx, setSuggestions, show, setShow } =
-    props;
+  const { searchedShow, setShow } = props;
 
   useEffect(() => {
-    const fetchUrl = async (id) => {
+    const retrieveExtraInfo = async (id) => {
       let url = `https://www.omdbapi.com/?i=${id}&apikey=ed39c59`;
 
       try {
         const response = await axios.get(url);
         const data = response.data;
-
-        setEpisodeImage(data.Poster.replace("_V1_SX300.jpg", "_V1_SX500.jpg"));
-        setEpisodePlot(data.Plot);
 
         setExtraInfo({
           image: data.Poster.replace("_V1_SX300.jpg", "_V1_SX500.jpg"),
@@ -37,16 +32,17 @@ export default function Graph(props) {
         });
 
         if (data.Error) {
-          console.log("errr");
+          console.log("error");
         }
       } catch (error) {
         console.error(error);
       }
     };
-    fetchUrl(episode.id);
+    retrieveExtraInfo(episode.id);
   }, [episode]);
 
   useEffect(() => {
+    chart && chart.destroy();
     const handleSearch = async () => {
       setIsLoading(true);
       setErrorInfo("");
@@ -54,7 +50,7 @@ export default function Graph(props) {
         const response = await axios.get(OMDB_API_URL, {
           params: {
             apikey: OMDB_API_KEY,
-            t: xxx,
+            t: searchedShow,
             type: "series",
           },
         });
@@ -77,8 +73,8 @@ export default function Graph(props) {
         setIsLoading(false);
       }
     };
-    handleSearch();
-  }, [xxx, chartType]);
+    searchedShow.length > 0 && handleSearch();
+  }, [searchedShow, chartType]);
 
   const getRatingsData = async (data) => {
     let ratingsData = [];
@@ -126,10 +122,6 @@ export default function Graph(props) {
       ratingsData = ratingsData.slice(0, 20);
     }
 
-    setSuggestions([]);
-
-    console.log("ratingsData: " + ratingsData);
-
     return ratingsData;
   };
 
@@ -146,8 +138,6 @@ export default function Graph(props) {
 
   const renderLineChart = (ratingsData) => {
     const imdbRatings = ratingsData.map((item) => parseFloat(item.imdbRating));
-    console.log("imdbRatings: " + imdbRatings);
-    console.log("ratingsData: " + JSON.stringify(ratingsData));
 
     const ctx = document.getElementById("myChartBar").getContext("2d");
 
@@ -164,7 +154,6 @@ export default function Graph(props) {
           const formattedEpisode = item.episode.toString().padStart(2, "0");
           return `${item.title} (S${formattedSeason}E${formattedEpisode})`;
         }),
-        // labels: Array.from({ length: imdbRatings.length }, (_, i) => i + 1),
 
         datasets: [
           {
@@ -175,12 +164,10 @@ export default function Graph(props) {
             borderColor: "rgba(255, 99, 132, 1)",
             borderWidth: 1,
             fill: true,
-            // moreData: ratingsData,
           },
         ],
       },
       options: {
-        // indexAxis: "y",
         plugins: {
           legend: {
             display: false,
@@ -230,8 +217,6 @@ export default function Graph(props) {
 
   const renderBarChart = (ratingsData) => {
     const imdbRatings = ratingsData.map((item) => parseFloat(item.imdbRating));
-    console.log("imdbRatings: " + imdbRatings);
-    console.log("ratingsData: " + JSON.stringify(ratingsData));
 
     const ctx = document.getElementById("myChartBar").getContext("2d");
 
@@ -327,35 +312,41 @@ export default function Graph(props) {
 
   return (
     <div className="graph">
-      <ReactSwitch
-        checked={true}
-        onChange={toggleChart}
-        className="graph__switch"
-      />
+      <span className="graph__error">{errorInfo}</span>
 
+      {isLoading && <div className="graph__loading">Loading..</div>}
+
+      {chart && (
+        <ReactSwitch
+          checked={true}
+          onChange={toggleChart}
+          className="graph__switch"
+        />
+      )}
       {chartType === "bar" ? (
         <div className="graph__bar-container">
           <canvas className="graph__bar" id="myChartBar"></canvas>
           <div className="graph__info">
+            <div class="graph__image-container">
+              <img className="graph__image" src={extraInfo.image} />
+            </div>
             <br />
-            {chartType}
+            <span>{episode.title}</span>
             <br />
-            <img className="graph__image" src={extraInfo.image} />
+            {"S" +
+              episode.season?.toString().padStart(2, "0") +
+              " E" +
+              episode.episode?.toString().padStart(2, "0")}
             <br />
-            <span>episode name: {episode.title}</span>
+            <span>
+              {episode.imdbRating} <span className="graph__info-star">★</span>
+            </span>
+            <br></br>
+            <span>{extraInfo.runtime}</span>
             <br />
-            <span>season number {episode.season}</span>
+            <span>Episode aired {extraInfo.released}</span>
             <br />
-            <span>episode number {episode.episode}</span>
-            <br />
-            <span>episode rating {episode.imdbRating}</span>
-            <br />
-            {/* <span>release date: {episode.released}</span> */}
-            <span>Released {extraInfo.released}</span>
-            <br />
-            <span>plot {extraInfo.plot}</span>
-            <br />
-            <span>Runtime {extraInfo.runtime}</span>
+            <span className="graph__info-plot">{extraInfo.plot}</span>
             <br />
           </div>
         </div>

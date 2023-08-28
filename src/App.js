@@ -9,37 +9,21 @@ import axios from "axios";
 
 export default function App() {
   const [theme, setTheme] = useState("dark");
-  const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorInfo, setErrorInfo] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
   const [show, setShow] = useState({});
-
-  const [xxx, setXxx] = useState([]);
+  const [searchedShow, setSearchedShow] = useState([]);
 
   const searchProps = {
     setTheme,
-    query,
-    setQuery,
-    errorInfo,
-    suggestions,
-    setSuggestions,
-    setXxx,
+    setSearchedShow,
   };
 
   const showInfoProps = {
-    isLoading,
     show,
   };
 
   const graphProps = {
-    setIsLoading,
-    setErrorInfo,
-    xxx,
-    setSuggestions,
-    show,
+    searchedShow,
     setShow,
-    theme,
   };
 
   return (

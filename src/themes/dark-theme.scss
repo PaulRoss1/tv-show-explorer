@@ -1,68 +1,119 @@
+$large-font: 20px;
+$small-font: 16px;
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 #dark {
   padding-left: 20px;
   padding-right: 20px;
   // height: 100%;
   background-color: #252429;
+  height: 100vh;
 
   .search {
     text-align: center;
+    padding-top: 20px;
 
     &__switch {
       position: absolute;
       top: 25px;
       left: 5px;
       cursor: pointer;
+
+      position: absolute !important;
+      top: 20px;
+      left: 20px;
     }
     &__title {
       color: #666666;
+      margin-top: 0;
+    }
+    &__container {
+      display: flex;
+      justify-content: center;
+    }
+    &__input-container {
+      width: 218px;
+      position: relative;
     }
     &__input {
       padding: 10px;
       font-size: 16px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      margin-right: 10px;
+      margin-right: 2px;
+      font-weight: 500;
     }
     &__suggestions-box {
-      border: 1px solid #ccc;
+      border: 0 1px 1px 1px solid #ccc;
       background-color: #fff;
       max-height: 150px;
       overflow-y: auto;
+      position: absolute;
+      top: 43px;
+      left: 0;
+      width: 100%;
+      border-radius: 4px;
     }
     &__suggestions {
+      margin: 0;
+      // padding: 10px;
+      // padding-left: 10px;
+      text-align: left;
+      list-style-type: none;
+      padding: 0;
     }
     &__suggestion {
+      border: 1px solid;
+      padding-top: 6px;
+      cursor: pointer;
+      padding-bottom: 6px;
+      padding-left: 10px;
+      font-weight: 500;
+    }
+    &__suggestion:hover {
+      background-color: #b9b9b9;
     }
     &__button {
       background-color: #b39c4d;
       color: #252429;
       border: none;
       border-radius: 4px;
-      padding: 10px 20px;
+      padding: 13px 20px 12px 20px;
+      margin-left: 2px;
       cursor: pointer;
-    }
-    &__error {
-      display: block;
-      color: #666666;
-      font-size: 24px;
-      font-weight: bold;
-      padding-top: 20px;
     }
   }
 
   .info {
-    padding-top: 10px;
-    padding-bottom: 40px;
+    padding-top: 30px;
+    padding-bottom: 15px;
 
-    &__loading {
-    }
-    &__title {
+    &__data {
       color: #666666;
-      font-size: 20px;
+      font-size: $large-font;
       font-weight: 700;
     }
     &__year {
-      font-size: 16px;
+      font-size: $small-font;
       font-weight: 500;
     }
     &__star {
@@ -71,21 +122,74 @@
   }
 
   .graph {
+    position: relative;
+    padding-top: 50px;
+    margin-top: 20px;
+
+    &__error {
+      display: block;
+      color: #666666;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+    }
+    &__loading {
+      display: block;
+      color: #666666;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+    }
     &__switch {
+      position: absolute !important;
+      top: 0;
+      left: 0;
     }
     &__bar-container {
       display: flex;
     }
     &__bar {
-      width: 75% !important;
+      width: 70% !important;
     }
     &__info {
-      width: 25%;
+      width: 30%;
+
+      padding-left: 20px;
+      color: #666666;
+      font-weight: 700;
+      font-size: $large-font;
+    }
+    &__info-star {
+      color: #f4c519;
+    }
+    &__info-plot {
+      font-size: $small-font;
+    }
+    &__image-container {
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      position: relative;
+
+      border-radius: 6px;
     }
     &__image {
-      width: 400px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+
+      // max-width: 100%;
+      border-radius: 6px;
     }
     &__line {
+      max-height: 65vh;
+    }
+    &__bar {
       max-height: 65vh;
     }
   }
