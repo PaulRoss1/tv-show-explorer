@@ -28,7 +28,7 @@ export default function Search(props) {
         });
 
         const data = response.data;
-        console.log("data: " + JSON.stringify(data));
+
         if (data.Search) {
           setSuggestions(
             data.Search.map(

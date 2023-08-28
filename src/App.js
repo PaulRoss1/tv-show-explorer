@@ -23,6 +23,7 @@ export default function App() {
 
   const graphProps = {
     searchedShow,
+    show,
     setShow,
   };
 
