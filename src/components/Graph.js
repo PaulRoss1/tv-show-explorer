@@ -10,17 +10,23 @@ export default function Graph(props) {
   const [errorInfo, setErrorInfo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [chart, setChart] = useState(null);
-  const [episode, setEpisode] = useState({});
+  // typ grafu (line/bar)
   const [chartType, setChartType] = useState("line");
+  // info o jednotlivym dilu (tite, rating...)
+  const [episode, setEpisode] = useState({});
+  // dalsi info o jednotlivym dilu (image, plot...)
   const [extraInfo, setExtraInfo] = useState({});
+  // data pro line chart
   const [lineRatingsData, setLineRatingsData] = useState([]);
 
+  // data pro bar chart
   const barRatingsData = [...lineRatingsData]
     .sort((a, b) => parseFloat(b.imdbRating) - parseFloat(a.imdbRating))
     .slice(0, 20);
 
   const { searchedShow, showData, setShowData } = props;
 
+  // v bar chart pri hoveru nad jednotlivymi dily ziska 'extraInfo' (image, plot..)
   useEffect(() => {
     const retrieveExtraInfo = async (id) => {
       let url = `https://www.omdbapi.com/?i=${id}&apikey=ed39c59`;
@@ -46,6 +52,7 @@ export default function Graph(props) {
     retrieveExtraInfo(episode.id);
   }, [episode]);
 
+  // nastavi 'showData' cimz spusti useEffect (getRatingsData)
   useEffect(() => {
     chart && chart.destroy();
     const handleSearch = async () => {
@@ -75,14 +82,18 @@ export default function Graph(props) {
     searchedShow.length > 0 && handleSearch();
   }, [searchedShow]);
 
+  // sezene data o serialu a nastavi lineRatingsData, cimz spusti useEffect
   useEffect(() => {
     const getRatingsData = async (showData) => {
       let ratingsData = [];
       for (let i = 1; i <= showData.totalSeasons; i++) {
+        // sezene data o jednotlivych seriich
         const seasonData = await fetchSeasonData(showData.Title, i);
 
         for (let j = 0; j < seasonData["Episodes"].length; j++) {
           const rating = seasonData["Episodes"][j]["imdbRating"];
+
+          // kdyz nakej dil nema hodnoceni, spocita se tim ze se vezme predchozi a naseldujici a zprumeruje se aby nebylo moc meze v grafu
           if (rating === "N/A") {
             try {
               const avgRating =
@@ -143,6 +154,7 @@ export default function Graph(props) {
     }
   }, [lineRatingsData, chartType]);
 
+  // data pro line chart
   const lineChartData = {
     labels: lineRatingsData.map((item) => {
       const formattedSeason = item.season.toString().padStart(2, "0");
@@ -170,6 +182,7 @@ export default function Graph(props) {
     ],
   };
 
+  // options pro line chart
   const lineChartOptions = {
     plugins: {
       legend: {
@@ -210,6 +223,7 @@ export default function Graph(props) {
     },
   };
 
+  // data pro bar chart
   const barChartData = {
     labels: barRatingsData.map((item) => {
       const formattedSeason = item.season.toString().padStart(2, "0");
@@ -236,6 +250,7 @@ export default function Graph(props) {
     ],
   };
 
+  // options pro bar chart
   const barChartOptions = {
     indexAxis: "y",
     plugins: {
@@ -281,6 +296,7 @@ export default function Graph(props) {
     if (searchedShow.length > 0) {
       const ctx = document.getElementById("myChart").getContext("2d");
 
+      // v bar chart - pri hoveru nad jednotlivymi dily se nastavi state 'episode', cimz spusti useEffect (retrieveExtraInfo)
       const hoverValue = {
         id: "hoverValue",
 
@@ -317,6 +333,7 @@ export default function Graph(props) {
 
       {isLoading && <div className="graph__loading">Loading..</div>}
 
+      {/* toggle mezi line a bar chart */}
       {chart && (
         <ReactSwitch
           checked={true}

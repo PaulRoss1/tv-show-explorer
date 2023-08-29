@@ -16,6 +16,7 @@ export default function Search(props) {
     setTheme((current) => (current === "light" ? "dark" : "light"));
   };
 
+  // pri zmene query - naplni array 'setSuggestions' (naseptavac)
   useEffect(() => {
     const fetchSuggestions = async () => {
       try {
@@ -44,11 +45,13 @@ export default function Search(props) {
     fetchSuggestions();
   }, [query]);
 
+  // kliknutim na serial z naseptavace se nastavi "searchedShow" - spusti useEffect (handleSearch) v Graph.js
   const handleSuggestionClick = (item) => {
     setSuggestions([]);
     setSearchedShow(item.split("(")[0]);
   };
 
+  // zmacknutim 'enter' se nastavi "searchedShow" - spusti useEffect (handleSearch) v Graph.js
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       setSuggestions([]);
@@ -56,6 +59,7 @@ export default function Search(props) {
     }
   };
 
+  // kliknutim mimo naseptavac 'suggestions' array se vyprazdni cimz zmizi
   const handleClickOutside = (event) => {
     if (
       suggestionsRef.current &&
@@ -65,6 +69,7 @@ export default function Search(props) {
     }
   };
 
+  // pri nacteni komponenty se prida funkce 'handleClickOutside'
   useEffect(() => {
     window.addEventListener("click", handleClickOutside);
     return () => {
@@ -74,6 +79,7 @@ export default function Search(props) {
 
   return (
     <div className="search">
+      {/* zmena dark mode/ light mode */}
       <ReactSwitch
         checked={true}
         onChange={toggleTheme}
