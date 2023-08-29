@@ -1,22 +1,22 @@
 export default function ShowInfo(props) {
-  const { show } = props;
+  const { showData } = props;
 
   return (
     <div className="info">
-      {!(Object.keys(show).length === 0) &&
-        !(show.Error == "Series not found!") && (
+      {!(Object.keys(showData).length === 0) &&
+        !(showData.Error == "Series not found!") && (
           <span className="info__data">
-            {`${show.Title} `}
-            <span className="info__year">{`(${show.Year})`}</span>
+            {`${showData.Title} `}
+            <span className="info__year">{`(${showData.Year})`}</span>
             &nbsp;&nbsp;&nbsp;
             {`·`}
             &nbsp;&nbsp;&nbsp;
-            {`${show.imdbRating} `}
+            {`${showData.imdbRating} `}
             <span className="info__star">★</span>
             &nbsp;&nbsp;&nbsp;
             {`·`}
             &nbsp;&nbsp;&nbsp;
-            {`Seasons: ${show.totalSeasons}`}
+            {`Seasons: ${showData.totalSeasons}`}
           </span>
         )}
     </div>

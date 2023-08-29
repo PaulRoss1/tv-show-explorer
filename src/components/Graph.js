@@ -13,10 +13,13 @@ export default function Graph(props) {
   const [episode, setEpisode] = useState({});
   const [chartType, setChartType] = useState("line");
   const [extraInfo, setExtraInfo] = useState({});
+  const [lineRatingsData, setLineRatingsData] = useState([]);
 
-  const [showRatingsData, setShowRatingsData] = useState([]);
+  const barRatingsData = [...lineRatingsData]
+    .sort((a, b) => parseFloat(b.imdbRating) - parseFloat(a.imdbRating))
+    .slice(0, 20);
 
-  const { searchedShow, show, setShow } = props;
+  const { searchedShow, showData, setShowData } = props;
 
   useEffect(() => {
     const retrieveExtraInfo = async (id) => {
@@ -61,7 +64,7 @@ export default function Graph(props) {
           setErrorInfo("No results found.");
           chart && chart.destroy();
         } else {
-          setShow(response.data);
+          setShowData(response.data);
           chart && chart.destroy();
         }
       } catch (error) {
@@ -73,10 +76,10 @@ export default function Graph(props) {
   }, [searchedShow]);
 
   useEffect(() => {
-    const getRatingsData = async (show) => {
+    const getRatingsData = async (showData) => {
       let ratingsData = [];
-      for (let i = 1; i <= show.totalSeasons; i++) {
-        const seasonData = await fetchSeasonData(show.Title, i);
+      for (let i = 1; i <= showData.totalSeasons; i++) {
+        const seasonData = await fetchSeasonData(showData.Title, i);
 
         for (let j = 0; j < seasonData["Episodes"].length; j++) {
           const rating = seasonData["Episodes"][j]["imdbRating"];
@@ -111,12 +114,8 @@ export default function Graph(props) {
         }
       }
 
-      setShowRatingsData(ratingsData);
+      setLineRatingsData(ratingsData);
       setIsLoading(false);
-
-      chartType === "line"
-        ? renderLineChart(ratingsData)
-        : renderBarChart(ratingsData);
     };
 
     const fetchSeasonData = async (title, season) => {
@@ -130,113 +129,157 @@ export default function Graph(props) {
       return response.data;
     };
 
-    getRatingsData(show);
-  }, [show]);
+    getRatingsData(showData);
+  }, [showData]);
 
   useEffect(() => {
-    const showRatingsDataCopy = [...showRatingsData];
-
-    let barRatingsData = showRatingsDataCopy.sort(
-      (a, b) => parseFloat(b.imdbRating) - parseFloat(a.imdbRating)
-    );
-    barRatingsData = barRatingsData.slice(0, 20);
     chart && chart.destroy();
-    chartType === "line"
-      ? renderLineChart(showRatingsData)
-      : renderBarChart(barRatingsData);
-  }, [chartType]);
+    if (chartType === "line") {
+      renderChart("line", lineChartData, lineChartOptions);
+    } else {
+      renderChart("bar", barChartData, barChartOptions);
 
-  const renderLineChart = (ratingsData) => {
-    if (searchedShow.length > 0) {
-      const imdbRatings = ratingsData.map((item) =>
-        parseFloat(item.imdbRating)
-      );
-      const ctx = document.getElementById("myChartBar").getContext("2d");
-
-      const gradient = ctx.createLinearGradient(0, 0, 0, 500);
-      gradient.addColorStop(0, "rgba(255, 0,0, 0.5)");
-      gradient.addColorStop(0.5, "rgba(255, 0, 0, 0.25)");
-      gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
-
-      const newChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: ratingsData.map((item) => {
-            const formattedSeason = item.season.toString().padStart(2, "0");
-            const formattedEpisode = item.episode.toString().padStart(2, "0");
-            return `${item.title} (S${formattedSeason}E${formattedEpisode})`;
-          }),
-          datasets: [
-            {
-              label: "Episode Rating",
-              data: imdbRatings,
-              pointBackgroundColor: "white",
-              backgroundColor: gradient,
-              borderColor: "rgba(255, 99, 132, 1)",
-              borderWidth: 1,
-              fill: true,
-            },
-          ],
-        },
-        options: {
-          plugins: {
-            legend: {
-              display: false,
-            },
-            tooltip: {
-              display: true,
-            },
-            tooltip: {
-              callbacks: {
-                labelColor: function (context) {
-                  return {
-                    borderColor: "#000",
-                    backgroundColor: "#000",
-                    borderWidth: 0,
-                  };
-                },
-              },
-            },
-          },
-          scales: {
-            x: {
-              grid: {
-                color: "rgba(200, 200, 200, 0.08)",
-                lineWidth: 1,
-              },
-              ticks: {
-                display: false,
-              },
-            },
-            y: {
-              grid: {
-                color: "rgba(200, 200, 200, 0.08)",
-                lineWidth: 1,
-              },
-              beginAtZero: true,
-            },
-          },
-          point: {
-            backgroundColor: "white",
-          },
-        },
-      });
-      setChart(newChart);
+      setEpisode(barRatingsData[0]);
     }
+  }, [lineRatingsData, chartType]);
+
+  const lineChartData = {
+    labels: lineRatingsData.map((item) => {
+      const formattedSeason = item.season.toString().padStart(2, "0");
+      const formattedEpisode = item.episode.toString().padStart(2, "0");
+      return `${item.title} (S${formattedSeason}E${formattedEpisode})`;
+    }),
+    datasets: [
+      {
+        label: "Episode Rating",
+        data: lineRatingsData.map((item) => parseFloat(item.imdbRating)),
+        pointBackgroundColor: "white",
+        backgroundColor: (context) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 500);
+          gradient.addColorStop(0, "rgba(255, 0,0, 0.5)");
+          gradient.addColorStop(0.5, "rgba(255, 0, 0, 0.25)");
+          gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
+          return gradient;
+        },
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+        fill: true,
+        moreData: lineRatingsData,
+      },
+    ],
   };
 
-  const renderBarChart = (ratingsData) => {
+  const lineChartOptions = {
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          labelColor: function (context) {
+            return {
+              borderColor: "#000",
+              backgroundColor: "#000",
+              borderWidth: 0,
+            };
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          color: "rgba(200, 200, 200, 0.08)",
+          lineWidth: 1,
+        },
+        ticks: {
+          display: false,
+        },
+      },
+      y: {
+        grid: {
+          color: "rgba(200, 200, 200, 0.08)",
+          lineWidth: 1,
+        },
+        beginAtZero: true,
+      },
+    },
+    point: {
+      backgroundColor: "white",
+    },
+  };
+
+  const barChartData = {
+    labels: barRatingsData.map((item) => {
+      const formattedSeason = item.season.toString().padStart(2, "0");
+      const formattedEpisode = item.episode.toString().padStart(2, "0");
+      return `${item.title} (S${formattedSeason}E${formattedEpisode})`;
+    }),
+    datasets: [
+      {
+        label: "Episode Rating",
+        data: barRatingsData.map((item) => parseFloat(item.imdbRating)),
+        pointBackgroundColor: "white",
+        backgroundColor: (context) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(1000, 0, 0, 0);
+          gradient.addColorStop(0, "rgba(255, 0,0, 0.5)");
+          gradient.addColorStop(0.5, "rgba(255, 0, 0, 0.25)");
+          gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
+          return gradient;
+        },
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+        moreData: barRatingsData,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    indexAxis: "y",
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        display: false,
+        callbacks: {
+          labelColor: function (context) {
+            return {
+              borderColor: "#000",
+              backgroundColor: "#000",
+              borderWidth: 0,
+            };
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          color: "rgba(200, 200, 200, 0.08)",
+          lineWidth: 1,
+        },
+      },
+      y: {
+        grid: {
+          color: "rgba(200, 200, 200, 0.08)",
+          lineWidth: 1,
+        },
+        ticks: {
+          display: false,
+        },
+      },
+    },
+    point: {
+      backgroundColor: "white",
+    },
+  };
+
+  const renderChart = (chartType, chartData, chartOptions) => {
     if (searchedShow.length > 0) {
-      const imdbRatings = ratingsData.map((item) =>
-        parseFloat(item.imdbRating)
-      );
-
-      const ctx = document.getElementById("myChartBar").getContext("2d");
-
-      const gradient = ctx.createLinearGradient(1000, 0, 0, 0);
-      gradient.addColorStop(0, "rgba(255, 0,0, 0.5)");
-      gradient.addColorStop(0.5, "rgba(255, 0, 0, 0.25)");
-      gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
+      const ctx = document.getElementById("myChart").getContext("2d");
 
       const hoverValue = {
         id: "hoverValue",
@@ -248,71 +291,15 @@ export default function Graph(props) {
           try {
             setEpisode(episodeData[chart.getActiveElements()[0].index]);
           } catch (error) {
-            console.error("error");
+            // console.error("error");
           }
         },
       };
 
       const newChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ratingsData.map((item) => {
-            const formattedSeason = item.season.toString().padStart(2, "0");
-            const formattedEpisode = item.episode.toString().padStart(2, "0");
-            return `${item.title} (S${formattedSeason}E${formattedEpisode})`;
-          }),
-          datasets: [
-            {
-              label: "Episode Rating",
-              data: imdbRatings,
-              pointBackgroundColor: "white",
-              backgroundColor: gradient,
-              borderColor: "rgba(255, 99, 132, 1)",
-              borderWidth: 1,
-              fill: true,
-              moreData: ratingsData,
-            },
-          ],
-        },
-        options: {
-          indexAxis: "y",
-          plugins: {
-            legend: {
-              display: false,
-            },
-            tooltip: {
-              callbacks: {
-                labelColor: function (context) {
-                  return {
-                    borderColor: "#000",
-                    backgroundColor: "#000",
-                    borderWidth: 0,
-                  };
-                },
-              },
-            },
-          },
-          scales: {
-            x: {
-              grid: {
-                color: "rgba(200, 200, 200, 0.08)",
-                lineWidth: 1,
-              },
-            },
-            y: {
-              grid: {
-                color: "rgba(200, 200, 200, 0.08)",
-                lineWidth: 1,
-              },
-              ticks: {
-                display: false,
-              },
-            },
-          },
-          point: {
-            backgroundColor: "white",
-          },
-        },
+        type: chartType,
+        data: chartData,
+        options: chartOptions,
         plugins: [hoverValue],
       });
 
@@ -339,7 +326,7 @@ export default function Graph(props) {
       )}
       {chartType === "bar" ? (
         <div className="graph__bar-container">
-          <canvas className="graph__bar" id="myChartBar"></canvas>
+          <canvas className="graph__bar" id="myChart"></canvas>
           <div className="graph__info">
             <div className="graph__image-container">
               <img className="graph__image" src={extraInfo.image} />
@@ -367,7 +354,7 @@ export default function Graph(props) {
           </div>
         </div>
       ) : (
-        <canvas className="graph__line" id="myChartBar"></canvas>
+        <canvas className="graph__line" id="myChart"></canvas>
       )}
     </div>
   );

@@ -5,11 +5,10 @@ import "./themes/dark-theme.scss";
 import Search from "./components/Search";
 import ShowInfo from "./components/ShowInfo";
 import Graph from "./components/Graph";
-import axios from "axios";
 
 export default function App() {
   const [theme, setTheme] = useState("dark");
-  const [show, setShow] = useState({});
+  const [showData, setShowData] = useState({});
   const [searchedShow, setSearchedShow] = useState([]);
 
   const searchProps = {
@@ -18,13 +17,13 @@ export default function App() {
   };
 
   const showInfoProps = {
-    show,
+    showData,
   };
 
   const graphProps = {
     searchedShow,
-    show,
-    setShow,
+    showData,
+    setShowData,
   };
 
   return (
