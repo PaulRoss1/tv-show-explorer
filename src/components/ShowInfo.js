@@ -3,8 +3,8 @@ export default function ShowInfo(props) {
 
   return (
     <div className="info">
-      {!(Object.keys(showData).length === 0) &&
-        !(showData.Error == "Series not found!") && (
+      {showData ? !(Object.keys(showData).length === 0) &&
+        !(showData.Error === "Series not found!") && (
           <span className="info__data">
             {`${showData.Title} `}
             <span className="info__year">{`(${showData.Year})`}</span>
@@ -18,7 +18,7 @@ export default function ShowInfo(props) {
             &nbsp;&nbsp;&nbsp;
             {`Seasons: ${showData.totalSeasons}`}
           </span>
-        )}
+        ) : null}
     </div>
   );
 }
